@@ -9,11 +9,6 @@ export async function api(path, options = {}) {
     ...options
   });
 
-  if (response.status === 401) {
-    window.location.href = '/login.html';
-    return null;
-  }
-
   if (response.status === 204) {
     return null;
   }
