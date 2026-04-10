@@ -8,43 +8,43 @@
   </head>
   <body class="min-h-screen bg-white text-zinc-900 font-mono antialiased dark:bg-zinc-950 dark:text-zinc-100">
     <div class="min-h-screen grid grid-cols-1 md:grid-cols-[240px_1fr]">
-      <aside class="sticky top-0 h-screen overflow-y-auto border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 flex flex-col gap-4">
-        <div class="border border-zinc-200 dark:border-zinc-800 border-l-2 border-l-fuchsia-500 dark:border-l-fuchsia-400 rounded-sm p-3 bg-white dark:bg-zinc-950">
+      <aside class="md:sticky md:top-0 md:h-screen overflow-y-auto border-b md:border-b-0 md:border-r border-black dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 flex flex-col gap-4">
+        <div class="border border-black dark:border-zinc-800 border-l-2 border-l-fuchsia-500 dark:border-l-fuchsia-400 rounded-sm p-3 bg-white dark:bg-zinc-950">
           <h1 class="text-sm font-medium text-zinc-800 dark:text-zinc-200">Physion</h1>
           <p class="mt-1 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Clinic Management</p>
         </div>
 
         <nav class="space-y-2 text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100">
-          <a href="#dashboard" data-route="dashboard" class="block rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Dashboard</a>
-          <a href="#patients" data-route="patients" class="block rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Patients</a>
-          <a href="#appointments" data-route="appointments" class="block rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Appointments</a>
-          <a href="#services" data-route="services" class="block rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Services</a>
-          <a href="#staff" data-route="staff" class="block rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Staff</a>
-          <a href="#finance" data-route="finance" class="block rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Finance</a>
-          <a href="#reports" data-route="reports" class="block rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Reports</a>
+          <a href="#dashboard" data-route="dashboard" class="block rounded-sm border border-black dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Dashboard</a>
+          <a href="#patients" data-route="patients" class="block rounded-sm border border-black dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Patients</a>
+          <a href="#appointments" data-route="appointments" class="block rounded-sm border border-black dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Appointments</a>
+          <a href="#services" data-route="services" class="block rounded-sm border border-black dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Services</a>
+          <a href="#staff" data-route="staff" class="block rounded-sm border border-black dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Staff</a>
+          <a href="#finance" data-route="finance" class="block rounded-sm border border-black dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Finance</a>
+          <a href="#reports" data-route="reports" class="block rounded-sm border border-black dark:border-zinc-700 px-3 py-2 transition-colors duration-100">Reports</a>
         </nav>
 
         <div class="mt-auto pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
-          <button id="themeToggleBtn" class="w-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-mono font-normal text-sm rounded-sm px-4 py-2 hover:bg-zinc-900 hover:text-zinc-100 hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 dark:hover:border-zinc-100 active:scale-[0.97] transition-all duration-100" aria-label="Toggle dark mode">🌙 Dark Mode</button>
-          <button id="logoutBtn" class="w-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-mono font-normal text-sm rounded-sm px-4 py-2 hover:bg-zinc-900 hover:text-zinc-100 hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 dark:hover:border-zinc-100 active:scale-[0.97] transition-all duration-100" aria-label="Logout">Logout</button>
+          <button id="themeToggleBtn" class="w-full bg-transparent border border-black dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-mono font-normal text-sm rounded-sm px-4 py-2 hover:bg-zinc-900 hover:text-zinc-100 hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 dark:hover:border-zinc-100 active:scale-[0.97] transition-all duration-100" aria-label="Toggle dark mode">🌙 Dark Mode</button>
+          <button id="logoutBtn" class="w-full bg-transparent border border-black dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-mono font-normal text-sm rounded-sm px-4 py-2 hover:bg-zinc-900 hover:text-zinc-100 hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 dark:hover:border-zinc-100 active:scale-[0.97] transition-all duration-100" aria-label="Logout">Logout</button>
         </div>
       </aside>
 
       <main class="p-4 md:p-6 flex flex-col gap-4">
-        <header class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 border-l-2 border-l-violet-500 dark:border-l-violet-400 rounded-sm p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <header class="bg-white dark:bg-zinc-950 border border-black dark:border-zinc-800 border-l-2 border-l-violet-500 dark:border-l-violet-400 rounded-sm p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
             <h2 id="pageTitle" class="text-sm font-medium text-zinc-800 dark:text-zinc-200">Dashboard</h2>
             <p id="headerSubtext" class="mt-1 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Single-branch physiotherapy operations</p>
           </div>
           <div class="flex items-center gap-2">
-            <span id="sessionUserMeta" class="hidden md:inline-flex rounded-sm border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100"></span>
-            <a href="/login.html" class="bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-mono font-normal text-sm rounded-sm px-4 py-2 hover:bg-zinc-900 hover:text-zinc-100 hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 dark:hover:border-zinc-100 active:scale-[0.97] transition-all duration-100" aria-label="Open login page">Switch User</a>
+            <span id="sessionUserMeta" class="hidden md:inline-flex rounded-sm border border-black dark:border-zinc-700 px-3 py-2 text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100"></span>
+            <a href="/login.html" class="bg-transparent border border-black dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-mono font-normal text-sm rounded-sm px-4 py-2 hover:bg-zinc-900 hover:text-zinc-100 hover:border-zinc-900 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 dark:hover:border-zinc-100 active:scale-[0.97] transition-all duration-100" aria-label="Open login page">Switch User</a>
           </div>
         </header>
 
-        <section id="view" class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-sm p-4"></section>
+        <section id="view" class="bg-white dark:bg-zinc-950 border border-black dark:border-zinc-800 rounded-sm p-4"></section>
 
-        <footer class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-sm p-4 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">
+        <footer class="bg-white dark:bg-zinc-950 border border-black dark:border-zinc-800 rounded-sm p-4 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">
           <div class="flex items-center justify-between">
             <span>Physion Raise Management</span>
             <span id="footerYear"></span>

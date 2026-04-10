@@ -1,6 +1,77 @@
 import { classes } from './constants.js';
 import { escapeHtml, patientRowTemplate, statusBadgeClass } from './utils.js';
 
+async function renderDashboard(api, getCurrentUser) {
+  const [patients, appointments, services, monthly] = await Promise.all([
+    api('/patients'),
+    api('/appointments'),
+    api('/services'),
+    api('/finance/summary/monthly')
+  ]);
+
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(now);
+  todayEnd.setHours(23, 59, 59, 999);
+
+  const appointmentsList = appointments || [];
+  const todayAppointments = appointmentsList.filter((a) => {
+    const d = new Date(a.startsAt);
+    return d >= todayStart && d <= todayEnd;
+  });
+  const upcoming = appointmentsList
+    .filter((a) => new Date(a.startsAt) >= now && a.status === 'scheduled')
+    .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
+    .slice(0, 5);
+
+  const upcomingRows = upcoming
+    .map(
+      (a) => `
+      <tr>
+        <td class="${classes.tableCell}">${escapeHtml(a.patient?.name || '-')}</td>
+        <td class="${classes.tableCell}">${escapeHtml(a.service?.name || '-')}</td>
+        <td class="${classes.tableCell}">${new Date(a.startsAt).toLocaleString()}</td>
+        <td class="${classes.tableCell}"><span class="${statusBadgeClass(a.status)}">${escapeHtml(a.status)}</span></td>
+      </tr>`
+    )
+    .join('');
+
+  return `
+    <div class="space-y-4">
+      <div class="${classes.card} border-l-2 border-l-violet-500 dark:border-l-violet-400">
+        <h3 class="${classes.heading}">Welcome, ${getCurrentUser()?.name || 'Staff'}</h3>
+        <p class="mt-2 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Roles: ${(getCurrentUser()?.roles || []).join(', ')}</p>
+        <p class="mt-4 text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100">Dashboard shows quick clinic KPIs, today’s schedule, and upcoming appointments.</p>
+      </div>
+
+      <div class="grid md:grid-cols-4 gap-3">
+        <div class="${classes.card} border-l-2 border-l-emerald-500 dark:border-l-emerald-400"><p class="text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Patients</p><p class="text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100 mt-1">${(patients || []).length}</p></div>
+        <div class="${classes.card} border-l-2 border-l-amber-500 dark:border-l-amber-400"><p class="text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Today's Appointments</p><p class="text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100 mt-1">${todayAppointments.length}</p></div>
+        <div class="${classes.card} border-l-2 border-l-fuchsia-500 dark:border-l-fuchsia-400"><p class="text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Services</p><p class="text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100 mt-1">${(services || []).length}</p></div>
+        <div class="${classes.card} border-l-2 border-l-blue-500 dark:border-l-blue-400"><p class="text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Monthly Profit</p><p class="text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100 mt-1">${monthly?.profit ?? 0}</p></div>
+      </div>
+
+      <div class="${classes.card} border-l-2 border-l-violet-500 dark:border-l-violet-400">
+        <h3 class="${classes.heading} mb-3">Upcoming Appointments</h3>
+        <div class="${classes.tableWrap}">
+          <table class="w-full">
+            <thead>
+              <tr class="text-left">
+                <th class="${classes.tableHead}">Patient</th>
+                <th class="${classes.tableHead}">Service</th>
+                <th class="${classes.tableHead}">Date</th>
+                <th class="${classes.tableHead}">Status</th>
+              </tr>
+            </thead>
+            <tbody>${upcomingRows || `<tr><td class="${classes.tableCell}" colspan="4">No upcoming appointments</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 async function renderPatients(api) {
   const patients = await api('/patients');
   const rows = (patients || []).map(patientRowTemplate).join('');
@@ -102,23 +173,25 @@ async function renderAppointments(api) {
       <form id="appointmentForm" class="${classes.card} border-l-2 border-l-amber-500 dark:border-l-amber-400 grid md:grid-cols-2 gap-3">
         <div>
           <label class="${classes.label}" for="a_patient">Patient</label>
-          <select id="a_patient" class="${classes.field}" required aria-label="Appointment patient">
+          <select id="a_patient" class="${classes.selectField}" required aria-label="Appointment patient">
             <option value="">Select patient</option>
             ${patientOptions}
           </select>
         </div>
         <div>
           <label class="${classes.label}" for="a_service">Service</label>
-          <select id="a_service" class="${classes.field}" required aria-label="Appointment service">
+          <select id="a_service" class="${classes.selectField}" required aria-label="Appointment service">
             <option value="">Select service</option>
             ${serviceOptions}
           </select>
         </div>
         <div>
-          <label class="${classes.label}" for="a_therapists">Therapists</label>
-          <select id="a_therapists" class="${classes.field} min-h-24" required multiple aria-label="Appointment therapists">
+          <label class="${classes.label}" for="a_therapists">Assigned Therapist(s)</label>
+          <select id="a_therapists" class="${classes.selectField} min-h-24" required multiple size="6" aria-label="Appointment therapists">
             ${therapistOptions}
           </select>
+          <p class="mt-1 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Hold Ctrl/Cmd to select multiple therapists.</p>
+          <p id="a_therapists_feedback" class="mt-1 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-500 dark:text-zinc-400">No therapist selected</p>
         </div>
         <div class="space-y-3">
           <div>
@@ -131,7 +204,7 @@ async function renderAppointments(api) {
           </div>
           <div>
             <label class="${classes.label}" for="a_status">Status</label>
-            <select id="a_status" class="${classes.field}" aria-label="Appointment status">
+            <select id="a_status" class="${classes.selectField}" aria-label="Appointment status">
               <option value="scheduled">Scheduled</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
@@ -278,8 +351,8 @@ async function renderFinance(api) {
           <input id="e_category" class="${classes.field}" required aria-label="Expense category" />
         </div>
         <div>
-          <label class="${classes.label}" for="e_date">Date</label>
-          <input id="e_date" type="date" class="${classes.field}" required aria-label="Expense date" />
+          <label class="${classes.label}" for="e_date_display">Date</label>
+          <input id="e_date_display" type="text" class="${classes.field}" value="Auto (today)" readonly aria-label="Expense date auto" />
         </div>
         <div class="md:col-span-5">
           <label class="${classes.label}" for="e_notes">Notes</label>
@@ -360,6 +433,7 @@ async function renderReports(api) {
 
 async function renderStaff(api) {
   const [staff, users] = await Promise.all([api('/staff'), api('/users')]);
+  const staffByUserId = new Map((staff || []).map((s) => [s.user?._id, s]));
   const rows = (staff || [])
     .map(
       (s) => `
@@ -374,18 +448,53 @@ async function renderStaff(api) {
     .join('');
 
   const userOptions = (users || [])
-    .map((u) => `<option value="${u._id}">${escapeHtml(u.name)} (${escapeHtml((u.roles || []).join(', '))})</option>`)
+    .map((u) => {
+      const linked = staffByUserId.get(u._id);
+      const modeLabel = linked ? 'Update existing staff record' : 'Assign new staff record';
+      return `<option value="${u._id}" data-staff-id="${linked?._id || ''}" data-base-salary="${linked?.baseSalary ?? 0}" data-commission="${linked?.commissionPerSession ?? 0}">${escapeHtml(u.name)} (${escapeHtml((u.roles || []).join(', '))}) • ${modeLabel}</option>`;
+    })
     .join('');
 
   return `
     <div class="space-y-4">
+      <form id="userManageForm" class="${classes.card} border-l-2 border-l-emerald-500 dark:border-l-emerald-400 grid md:grid-cols-3 gap-3">
+        <div>
+          <label class="${classes.label}" for="u_name">User name</label>
+          <input id="u_name" class="${classes.field}" required aria-label="User name" />
+        </div>
+        <div>
+          <label class="${classes.label}" for="u_email">Email</label>
+          <input id="u_email" type="email" class="${classes.field}" required aria-label="User email" />
+        </div>
+        <div>
+          <label class="${classes.label}" for="u_password">Password</label>
+          <input id="u_password" type="password" class="${classes.field}" required aria-label="User password" />
+        </div>
+        <div>
+          <label class="${classes.label}" for="u_role">Role</label>
+          <select id="u_role" class="${classes.selectField}" aria-label="User role">
+            <option value="receptionist">Receptionist</option>
+            <option value="therapist">Therapist</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="${classes.label}" for="u_contact">Contact info</label>
+          <input id="u_contact" class="${classes.field}" aria-label="User contact info" />
+        </div>
+        <div class="md:col-span-3 flex justify-end">
+          <button class="${classes.button}" type="submit" aria-label="Create user account">Create User Account</button>
+        </div>
+      </form>
+
       <form id="staffForm" class="${classes.card} border-l-2 border-l-blue-500 dark:border-l-blue-400 grid md:grid-cols-3 gap-3">
         <div>
           <label class="${classes.label}" for="st_user">User</label>
-          <select id="st_user" class="${classes.field}" required aria-label="Select user">
+          <select id="st_user" class="${classes.selectField}" required aria-label="Select user">
             <option value="">Select User</option>
             ${userOptions}
           </select>
+          <p id="st_user_mode" class="mt-1 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Select a user to assign or update staff values.</p>
         </div>
         <div>
           <label class="${classes.label}" for="st_baseSalary">Base Salary</label>
@@ -422,13 +531,7 @@ async function renderStaff(api) {
 }
 export function createTemplates(api, getCurrentUser) {
   return {
-    dashboard: async () => `
-      <div class="${classes.card} border-l-2 border-l-violet-500 dark:border-l-violet-400">
-        <h3 class="${classes.heading}">Welcome, ${getCurrentUser()?.name || 'Staff'}</h3>
-        <p class="mt-2 text-[11px] uppercase tracking-widest font-mono font-normal text-zinc-400 dark:text-zinc-500">Roles: ${(getCurrentUser()?.roles || []).join(', ')}</p>
-        <p class="mt-4 text-sm font-mono font-normal text-zinc-900 dark:text-zinc-100">Implementation started. Patients and appointments now support create/list/archive flow.</p>
-      </div>
-    `,
+    dashboard: () => renderDashboard(api, getCurrentUser),
     patients: () => renderPatients(api),
     appointments: () => renderAppointments(api),
     services: () => renderServices(api),

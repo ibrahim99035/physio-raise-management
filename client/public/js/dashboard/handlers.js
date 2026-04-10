@@ -60,6 +60,24 @@ export function wireAppointmentsHandlers(api, rerender) {
   const inlineBtn = document.getElementById('openInlinePatient');
   const inlineForm = document.getElementById('inlinePatientForm');
   const msg = document.getElementById('appointmentsMessage');
+  const therapistSelect = document.getElementById('a_therapists');
+  const therapistFeedback = document.getElementById('a_therapists_feedback');
+
+  const refreshTherapistFeedback = () => {
+    if (!therapistSelect || !therapistFeedback) return;
+    const selected = Array.from(therapistSelect.selectedOptions || []);
+    if (!selected.length) {
+      therapistFeedback.textContent = 'No therapist selected';
+      return;
+    }
+
+    const names = selected.map((opt) => opt.textContent.trim()).slice(0, 3).join(', ');
+    therapistFeedback.textContent =
+      selected.length <= 3 ? `Selected: ${names}` : `${selected.length} therapists selected (${names}...)`;
+  };
+
+  therapistSelect?.addEventListener('change', refreshTherapistFeedback);
+  refreshTherapistFeedback();
 
   inlineBtn?.addEventListener('click', () => {
     inlineForm?.classList.toggle('hidden');
@@ -93,7 +111,6 @@ export function wireAppointmentsHandlers(api, rerender) {
     event.preventDefault();
     setMessage(msg, false, '');
 
-    const therapistSelect = document.getElementById('a_therapists');
     const startsAtRaw = document.getElementById('a_startsAt').value;
     const payload = {
       patient: document.getElementById('a_patient').value,
@@ -150,7 +167,7 @@ export function wireFinanceHandlers(api, rerender) {
       title: document.getElementById('e_title').value.trim(),
       amount: Number(document.getElementById('e_amount').value || 0),
       category: document.getElementById('e_category').value.trim(),
-      date: new Date(document.getElementById('e_date').value).toISOString(),
+      date: new Date().toISOString(),
       notes: document.getElementById('e_notes').value.trim()
     };
 
@@ -202,12 +219,64 @@ export function wireGenericRowActions(view, api, rerender) {
 
 export function wireStaffHandlers(api, rerender) {
   const form = document.getElementById('staffForm');
+  const userManageForm = document.getElementById('userManageForm');
   const msg = document.getElementById('staffMessage');
+  const userSelect = document.getElementById('st_user');
+  const modeLabel = document.getElementById('st_user_mode');
+  const baseSalaryInput = document.getElementById('st_baseSalary');
+  const commissionInput = document.getElementById('st_commission');
+
+  function applySelectedUserMode() {
+    if (!userSelect || !modeLabel || !baseSalaryInput || !commissionInput) return;
+
+    const option = userSelect.selectedOptions?.[0];
+    if (!option || !option.value) {
+      modeLabel.textContent = 'Select a user to assign or update staff values.';
+      return;
+    }
+
+    const staffId = option.dataset.staffId || '';
+    if (staffId) {
+      modeLabel.textContent = 'Update mode: this user already has a staff record.';
+      baseSalaryInput.value = option.dataset.baseSalary || '0';
+      commissionInput.value = option.dataset.commission || '0';
+    } else {
+      modeLabel.textContent = 'Create mode: this will create a new staff record for the selected user.';
+      if (!baseSalaryInput.value) baseSalaryInput.value = '0';
+      if (!commissionInput.value) commissionInput.value = '0';
+    }
+  }
+
+  userSelect?.addEventListener('change', applySelectedUserMode);
+  applySelectedUserMode();
+
+  userManageForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    setMessage(msg, false, '');
+
+    const payload = {
+      name: document.getElementById('u_name').value.trim(),
+      email: document.getElementById('u_email').value.trim(),
+      password: document.getElementById('u_password').value,
+      roles: [document.getElementById('u_role').value],
+      contactInfo: document.getElementById('u_contact').value.trim()
+    };
+
+    try {
+      await api('/users', { method: 'POST', body: JSON.stringify(payload) });
+      setMessage(msg, true, 'User account created.');
+      await rerender();
+    } catch (error) {
+      setMessage(msg, false, error.message);
+    }
+  });
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     setMessage(msg, false, '');
 
+    const option = userSelect?.selectedOptions?.[0];
+    const staffId = option?.dataset.staffId || '';
     const payload = {
       user: document.getElementById('st_user').value,
       baseSalary: Number(document.getElementById('st_baseSalary').value || 0),
@@ -215,8 +284,13 @@ export function wireStaffHandlers(api, rerender) {
     };
 
     try {
-      await api('/staff', { method: 'POST', body: JSON.stringify(payload) });
-      setMessage(msg, true, 'Staff record created.');
+      if (staffId) {
+        await api(`/staff/${staffId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+        setMessage(msg, true, 'Staff record updated.');
+      } else {
+        await api('/staff', { method: 'POST', body: JSON.stringify(payload) });
+        setMessage(msg, true, 'Staff record created.');
+      }
       await rerender();
     } catch (error) {
       setMessage(msg, false, error.message);

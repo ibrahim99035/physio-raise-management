@@ -43,6 +43,20 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'physion-raise-management', date: new Date().toISOString() });
 });
 
+app.use((error, req, res, next) => {
+  if (!req.path.startsWith('/api')) {
+    return next(error);
+  }
+
+  if (error?.code === 11000) {
+    return res.status(409).json({ message: 'Record already exists for selected user' });
+  }
+
+  const status = error?.statusCode || error?.status || 500;
+  const message = error?.message || 'Internal Server Error';
+  return res.status(status).json({ message });
+});
+
 app.use(express.static(path.join(rootDir, 'client/public')));
 
 app.get('*', (_req, res) => {
