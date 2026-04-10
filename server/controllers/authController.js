@@ -1,10 +1,6 @@
 import { User } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
-function isDeploymentBypassEnabled() {
-  return process.env.VERCEL === '1' || process.env.AUTH_BYPASS === 'true';
-}
-
 function deploymentBypassUser() {
   return {
     id: 'deployment-bypass-user',
@@ -29,61 +25,13 @@ export const registerAdmin = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  if (isDeploymentBypassEnabled()) {
-    return res.json({ user: deploymentBypassUser() });
-  }
-
-  const { email, password } = req.body;
-
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
-  const isValid = await user.verifyPassword(password);
-  if (!isValid) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
-  req.session.user = {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    roles: user.roles
-  };
-
-  return req.session.save((error) => {
-    if (error) {
-      console.error('Session save failed:', error?.message || error);
-      return res.status(500).json({ message: 'Failed to create session' });
-    }
-
-    return res.json({ user: req.session.user });
-  });
+  return res.json({ user: deploymentBypassUser() });
 });
 
 export function logout(req, res) {
-  if (isDeploymentBypassEnabled()) {
-    return res.status(204).send();
-  }
-
-  req.session.destroy(() => {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const sameSite = process.env.SESSION_COOKIE_SAMESITE || 'lax';
-    res.clearCookie(process.env.SESSION_NAME || 'physion.sid', {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite,
-      domain: process.env.SESSION_COOKIE_DOMAIN || undefined
-    });
-    res.status(204).send();
-  });
+  return res.status(204).send();
 }
 
 export function me(req, res) {
-  if (isDeploymentBypassEnabled()) {
-    return res.json({ user: deploymentBypassUser() });
-  }
-
-  return res.json({ user: req.session.user });
+  return res.json({ user: deploymentBypassUser() });
 }

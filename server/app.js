@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import { sessionMiddleware } from './config/session.js';
 import authRoutes from './routes/auth.js';
 import patientRoutes from './routes/patients.js';
 import appointmentRoutes from './routes/appointments.js';
@@ -18,7 +17,6 @@ import userRoutes from './routes/users.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
-const bypassAuth = process.env.VERCEL === '1' || process.env.AUTH_BYPASS === 'true';
 
 dotenv.config();
 
@@ -30,9 +28,6 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-if (!bypassAuth) {
-  app.use(sessionMiddleware);
-}
 
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
