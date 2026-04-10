@@ -1,14 +1,13 @@
 {
   "version": 2,
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
+    },
+    {
+      "source": "/",
+      "destination": "/client/public/index.html"
     },
     {
       "source": "/(.*)",

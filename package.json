@@ -8,6 +8,8 @@
     "dev:server": "nodemon server/server.js",
     "dev:css": "tailwindcss -i ./client/src/css/input.css -o ./client/public/css/output.css --watch",
     "build:css": "tailwindcss -i ./client/src/css/input.css -o ./client/public/css/output.css --minify",
+    "build": "npm run build:css",
+    "vercel-build": "npm run build:css",
     "start": "node server/server.js",
     "seed": "node server/scripts/seed.js",
     "test": "node --test tests/api.test.js"
