@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import { sessionMiddleware } from './config/session.js';
 import authRoutes from './routes/auth.js';
 import patientRoutes from './routes/patients.js';
 import appointmentRoutes from './routes/appointments.js';
@@ -28,6 +29,7 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(sessionMiddleware);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);

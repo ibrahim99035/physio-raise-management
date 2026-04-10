@@ -1,15 +1,6 @@
 import { User } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
-function deploymentBypassUser() {
-  return {
-    id: 'deployment-bypass-user',
-    name: 'Deployment User',
-    email: 'deployment@local',
-    roles: ['admin']
-  };
-}
-
 export const registerAdmin = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -25,13 +16,49 @@ export const registerAdmin = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  return res.json({ user: deploymentBypassUser() });
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+
+  const isValid = await user.verifyPassword(password);
+  if (!isValid) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+
+  req.session.user = {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    roles: user.roles
+  };
+
+  return req.session.save((error) => {
+    if (error) {
+      console.error('Session save failed:', error?.message || error);
+      return res.status(500).json({ message: 'Failed to create session' });
+    }
+
+    return res.json({ user: req.session.user });
+  });
 });
 
 export function logout(req, res) {
-  return res.status(204).send();
+  req.session.destroy(() => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const sameSite = process.env.SESSION_COOKIE_SAMESITE || 'lax';
+    res.clearCookie(process.env.SESSION_NAME || 'physion.sid', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite,
+      domain: process.env.SESSION_COOKIE_DOMAIN || undefined
+    });
+    res.status(204).send();
+  });
 }
 
 export function me(req, res) {
-  return res.json({ user: deploymentBypassUser() });
+  return res.json({ user: req.session.user });
 }

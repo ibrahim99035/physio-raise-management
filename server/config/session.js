@@ -49,11 +49,12 @@ function inferDbNameFromMongoUri(uri) {
 
 const sessionDbName = process.env.SESSION_DB_NAME || inferDbNameFromMongoUri(process.env.MONGO_URI) || 'test';
 const cookieSameSite = normalizeSameSite(process.env.SESSION_COOKIE_SAMESITE || 'lax');
+const sessionCollection = process.env.SESSION_COLLECTION || 'app_sessions';
 
 const store = useMongoStore
   ? MongoStore.create({
       mongoUrl: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/physion_raisemanagement',
-      collectionName: 'sessions',
+      collectionName: sessionCollection,
       mongoOptions: { dbName: sessionDbName },
       autoRemove: 'disabled',
       ttl: Math.floor(maxAge / 1000)
