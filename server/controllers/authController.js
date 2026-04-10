@@ -37,6 +37,7 @@ export const login = asyncHandler(async (req, res) => {
 
   return req.session.save((error) => {
     if (error) {
+      console.error('Session save failed:', error?.message || error);
       return res.status(500).json({ message: 'Failed to create session' });
     }
 
@@ -47,10 +48,11 @@ export const login = asyncHandler(async (req, res) => {
 export function logout(req, res) {
   req.session.destroy(() => {
     const isProduction = process.env.NODE_ENV === 'production';
+    const sameSite = process.env.SESSION_COOKIE_SAMESITE || 'lax';
     res.clearCookie(process.env.SESSION_NAME || 'physion.sid', {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
+      sameSite,
       domain: process.env.SESSION_COOKIE_DOMAIN || undefined
     });
     res.status(204).send();

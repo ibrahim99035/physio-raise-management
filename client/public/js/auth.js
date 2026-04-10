@@ -3,6 +3,13 @@ import { api } from './api.js';
 const form = document.getElementById('loginForm');
 const errorEl = document.getElementById('error');
 const loginThemeToggle = document.getElementById('loginThemeToggle');
+const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
+function setLoginLoading(isLoading) {
+  if (!loginSubmitBtn) return;
+  loginSubmitBtn.disabled = isLoading;
+  loginSubmitBtn.textContent = isLoading ? 'Logging in...' : 'Login';
+}
 
 function setTheme(theme) {
   const isDark = theme === 'dark';
@@ -26,6 +33,8 @@ function initTheme() {
 
 form?.addEventListener('submit', async (event) => {
   event.preventDefault();
+  errorEl.textContent = '';
+  setLoginLoading(true);
 
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -39,6 +48,8 @@ form?.addEventListener('submit', async (event) => {
     window.location.href = '/';
   } catch (error) {
     errorEl.textContent = error.message;
+  } finally {
+    setLoginLoading(false);
   }
 });
 
