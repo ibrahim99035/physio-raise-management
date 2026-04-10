@@ -46,7 +46,13 @@ export const login = asyncHandler(async (req, res) => {
 
 export function logout(req, res) {
   req.session.destroy(() => {
-    res.clearCookie(process.env.SESSION_NAME || 'physion.sid');
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.clearCookie(process.env.SESSION_NAME || 'physion.sid', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      domain: process.env.SESSION_COOKIE_DOMAIN || undefined
+    });
     res.status(204).send();
   });
 }

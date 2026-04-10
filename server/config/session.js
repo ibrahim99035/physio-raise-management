@@ -6,6 +6,8 @@ const isTest = process.env.NODE_ENV === 'test';
 const isProduction = process.env.NODE_ENV === 'production';
 const hasMongoUri = Boolean(process.env.MONGO_URI);
 const useMongoStore = !isTest && (process.env.SESSION_STORE === 'mongo' || (isProduction && hasMongoUri));
+const cookieDomain = process.env.SESSION_COOKIE_DOMAIN || undefined;
+const cookieSameSite = isProduction ? 'none' : 'lax';
 
 const store = useMongoStore
   ? MongoStore.create({
@@ -30,8 +32,9 @@ export const sessionMiddleware = session({
   proxy: true,
   cookie: {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: cookieSameSite,
     secure: isProduction,
+    domain: cookieDomain,
     maxAge
   }
 });
